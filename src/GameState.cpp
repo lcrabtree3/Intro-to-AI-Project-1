@@ -1,11 +1,12 @@
 #include "GameState.h"
 #include <iostream>
 #include <algorithm>
-#include <stdexcept>  // For std::invalid_argument
+#include <stdexcept>
+#include <sstream>
 
 // Constructor
 GameState::GameState(int n, int m, char firstPlayer)
-    : board(new Board(n))  // Use new instead of make_unique for C++11
+    : board(new Board(n))
     , currentPlayer(firstPlayer)
     , mToWin(m)
     , gameOver(false)
@@ -22,18 +23,18 @@ GameState::GameState(int n, int m, char firstPlayer)
     }
 }
 
-// Destructor - needed for std::unique_ptr with incomplete type
+// Destructor
 GameState::~GameState() = default;
 
 // Copy constructor
 GameState::GameState(const GameState& other)
-    : board(new Board(*other.board))  // Use new instead of make_unique
+    : board(new Board(*other.board))
     , currentPlayer(other.currentPlayer)
     , mToWin(other.mToWin)
     , gameOver(other.gameOver)
     , winner(other.winner) {}
 
-// Move constructor (optional but good to have)
+// Move constructor
 GameState::GameState(GameState&& other) noexcept
     : board(std::move(other.board))
     , currentPlayer(other.currentPlayer)
@@ -94,7 +95,7 @@ bool GameState::applyMove(int column) {
     // Check for draw (board full)
     if (checkDraw()) {
         gameOver = true;
-        winner = '\0';  // No winner in draw
+        winner = '\0';
         return true;
     }
     
@@ -124,23 +125,32 @@ void GameState::switchPlayer() {
     currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
 }
 
+bool GameState::checkDraw() const {
+    return board->isFull();
+}
+
+// ============= WIN DETECTION IMPLEMENTATION =============
+
 bool GameState::checkWin() const {
     // Check each cell that contains the current player's piece
     for (int row = 0; row < board->getSize(); row++) {
         for (int col = 0; col < board->getSize(); col++) {
             char cell = board->getCell(row, col);
             if (cell == currentPlayer) {
-                // Check all four directions from this cell
-                if (checkHorizontal(row, col, currentPlayer) ||
-                    checkVertical(row, col, currentPlayer) ||
-                    checkDiagonalDown(row, col, currentPlayer) ||
-                    checkDiagonalUp(row, col, currentPlayer)) {
+                if (checkAllDirections(row, col, currentPlayer)) {
                     return true;
                 }
             }
         }
     }
     return false;
+}
+
+bool GameState::checkAllDirections(int row, int col, char player) const {
+    return checkHorizontal(row, col, player) ||
+           checkVertical(row, col, player) ||
+           checkDiagonalDown(row, col, player) ||
+           checkDiagonalUp(row, col, player);
 }
 
 bool GameState::checkHorizontal(int row, int col, char player) const {
@@ -161,9 +171,10 @@ bool GameState::checkHorizontal(int row, int col, char player) const {
 
 bool GameState::checkVertical(int row, int col, char player) const {
     int count = 0;
+    int size = board->getSize();
     
     // Check upward (since row 0 is bottom)
-    for (int r = row; r >= 0 && r > row - mToWin; r--) {
+    for (int r = row; r < size && r < row + mToWin; r++) {
         if (board->getCell(r, col) == player) {
             count++;
         } else {
@@ -179,7 +190,6 @@ bool GameState::checkDiagonalDown(int row, int col, char player) const {
     int size = board->getSize();
     
     // Check diagonal going up-right (increasing row, increasing col)
-    // Since row 0 is bottom, increasing row means going UP
     for (int i = 0; i < mToWin; i++) {
         int r = row + i;  // Moving UP
         int c = col + i;  // Moving RIGHT
@@ -202,7 +212,6 @@ bool GameState::checkDiagonalUp(int row, int col, char player) const {
     int size = board->getSize();
     
     // Check diagonal going down-right (decreasing row, increasing col)
-    // Since row 0 is bottom, decreasing row means going DOWN
     for (int i = 0; i < mToWin; i++) {
         int r = row - i;  // Moving DOWN
         int c = col + i;  // Moving RIGHT
@@ -220,7 +229,36 @@ bool GameState::checkDiagonalUp(int row, int col, char player) const {
     return count >= mToWin;
 }
 
-bool GameState::checkDraw() const {
-    // Simple draw detection: board is full
-    return board->isFull();
+std::string GameState::getWinDescription() const {
+    if (!gameOver || winner == '\0') {
+        return "Game not over or no winner";
+    }
+    
+    std::stringstream ss;
+    ss << "Winner: " << winner << " (";
+    
+    // Find the winning line (simplified - just indicates it's a win)
+    bool found = false;
+    for (int row = 0; row < board->getSize() && !found; row++) {
+        for (int col = 0; col < board->getSize() && !found; col++) {
+            if (board->getCell(row, col) == winner) {
+                if (checkHorizontal(row, col, winner)) {
+                    ss << "horizontal at row " << row;
+                    found = true;
+                } else if (checkVertical(row, col, winner)) {
+                    ss << "vertical at col " << col;
+                    found = true;
+                } else if (checkDiagonalDown(row, col, winner)) {
+                    ss << "diagonal (down-right) from (" << row << "," << col << ")";
+                    found = true;
+                } else if (checkDiagonalUp(row, col, winner)) {
+                    ss << "diagonal (up-right) from (" << row << "," << col << ")";
+                    found = true;
+                }
+            }
+        }
+    }
+    
+    ss << ")";
+    return ss.str();
 }
