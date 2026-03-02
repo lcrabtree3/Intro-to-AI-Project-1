@@ -1,0 +1,29 @@
+# Compiled executables (no extension)
+connectM
+test_board
+test_gamestate
+test_visualization
+test_controller
+test_ai
+test_integration
+test_full_game
+
+# Object files
+*.o
+*.gch
+
+# Build directory
+build/
+bin/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Backup files
+*~
+*.bak
