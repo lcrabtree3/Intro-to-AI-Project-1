@@ -1,3 +1,19 @@
+/*
+ * Author: Louis Crabtree
+ * Last modified: March 1, 2026
+ *
+ * Description:
+ *   Implementation of the GameState class. The GameState manages the board,
+ *   current player, win/draw detection, and rule enforcement. It provides
+ *   a copyable and movable state for AI simulations.
+ *
+ * Notes:
+ *   - applyMove expects a 1‑based column number.
+ *   - win detection checks all four directions (horizontal, vertical, both diagonals).
+ *   - After a move, the state automatically checks for win/draw and updates gameOver/winner.
+ *   - The class is fully copyable and movable for use in minimax search.
+ */
+
 #include "GameState.h"
 #include <iostream>
 #include <algorithm>

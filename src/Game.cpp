@@ -1,3 +1,18 @@
+/*
+ * Author: Louis Crabtree
+ * Last modified: March 1, 2026
+ *
+ * Description:
+ *   Implementation of the Game class. The Game class orchestrates the entire
+ *   Connect M game, managing the main loop, player turns, board display, and
+ *   win/draw checking. It owns the GameState, Controller, and player objects.
+ *
+ * Notes:
+ *   - The game alternates turns between human and AI based on command-line input.
+ *   - After each valid move, the board is printed and win/draw conditions are checked.
+ *   - The game ends when a player connects M disks or the board is full.
+ */
+
 #include "Game.h"
 #include <iostream>
 #include <stdexcept>
@@ -10,7 +25,6 @@ Game::Game(int n, int m, int h)
     , humanFirst(h == 1)
     , moveCount(0) {
     
-    // Validate inputs
     if (n < 3 || n > 10) {
         throw std::invalid_argument("Grid size must be between 3 and 10");
     }
@@ -18,25 +32,18 @@ Game::Game(int n, int m, int h)
         throw std::invalid_argument("M must be between 2 and N");
     }
     
-    // Determine first player
     char firstPlayer = (humanFirst) ? 'X' : 'O';
     
-    // Create game state
-    gameState = std::make_unique<GameState>(n, m, firstPlayer);
+    gameState = std::unique_ptr<GameState>(new GameState(n, m, firstPlayer));
+    controller = std::unique_ptr<Controller>(new Controller(*gameState));
     
-    // Create controller
-    controller = std::make_unique<Controller>(*gameState);
-    
-    // Initialize players
     initializePlayers(humanFirst);
 }
 
 void Game::initializePlayers(bool humanMovesFirst) {
-    // Create players
-    humanPlayer = std::make_unique<HumanPlayer>('X');
-    aiPlayer = std::make_unique<AIPlayer>('O', boardSize, mToWin);
-    
-    // Set current player based on who moves first
+    humanPlayer = std::unique_ptr<HumanPlayer>(new HumanPlayer('X'));
+    aiPlayer = std::unique_ptr<AIPlayer>(new AIPlayer('O', 5)); // depth 5
+
     if (humanMovesFirst) {
         currentPlayer = humanPlayer.get();
     } else {
@@ -45,11 +52,7 @@ void Game::initializePlayers(bool humanMovesFirst) {
 }
 
 char Game::getPlayerSymbol(const Player* player) const {
-    if (player == humanPlayer.get()) {
-        return 'X';
-    } else {
-        return 'O';
-    }
+    return (player == humanPlayer.get()) ? 'X' : 'O';
 }
 
 void Game::displayWelcome() const {
@@ -76,7 +79,6 @@ void Game::displayBoard() const {
 }
 
 void Game::displayTurn() const {
-    char symbol = getPlayerSymbol(currentPlayer);
     std::cout << "-------------------------------------\n";
     std::cout << "Turn " << (moveCount + 1) << " | ";
     
@@ -131,25 +133,19 @@ bool Game::checkGameOver() {
 }
 
 void Game::run() {
-    // Display welcome message
     displayWelcome();
-    
-    // Display initial empty board
     displayBoard();
-    
-    // Main game loop
+
     while (!gameState->isGameOver()) {
-        // Display whose turn it is
         displayTurn();
         
         int column = -1;
         bool validMove = false;
         
-        // Get move from current player
         if (currentPlayer == humanPlayer.get()) {
-            // Human player - loop until valid move
+            // Human player
             while (!validMove) {
-                column = currentPlayer->getMove(*gameState);
+                column = currentPlayer->getMove(*gameState);  // returns 1-based
                 
                 if (column < 1 || column > boardSize) {
                     std::cout << " Invalid column! Please enter a number between 1 and " << boardSize << ".\n";
@@ -163,11 +159,10 @@ void Game::run() {
                 }
             }
         } else {
-            // AI player - add a small delay to make it feel more natural
+            // AI player
             std::cout << "AI is thinking";
             std::cout.flush();
             
-            // Simple thinking animation
             for (int i = 0; i < 3; i++) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(300));
                 std::cout << ".";
@@ -175,15 +170,11 @@ void Game::run() {
             }
             std::cout << "\n";
             
-            // Get AI move
             column = currentPlayer->getMove(*gameState);
             validMove = processMove(column);
             
-            // AI should always return a valid move, but just in case
             if (!validMove) {
                 std::cout << "  AI returned an invalid move. Finding a valid column...\n";
-                
-                // Fallback: find first valid column
                 for (int c = 1; c <= boardSize; c++) {
                     if (gameState->isValidMove(c)) {
                         column = c;
@@ -196,15 +187,13 @@ void Game::run() {
             std::cout << "AI chose column " << column << "\n";
         }
         
-        // Display updated board
         displayBoard();
         
-        // Check if game ended
         if (checkGameOver()) {
             break;
         }
         
-        // Switch player for next turn
+        // Switch player
         if (currentPlayer == humanPlayer.get()) {
             currentPlayer = aiPlayer.get();
         } else {

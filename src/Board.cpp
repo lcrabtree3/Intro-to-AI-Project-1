@@ -1,3 +1,17 @@
+/*
+ * Author: Louis Crabtree
+ * Last modified: March 1, 2026
+ *
+ * Description:
+ *   Implementation of the Board class. Manages the N x N grid, disk placement,
+ *   column capacity, and provides various ASCII representations for display.
+ *
+ * Notes:
+ *   - Row 0 is the bottom, row size-1 is the top.
+ *   - Columns are 0‑based internally, but user input is 1‑based.
+ *   - All public methods perform bounds checking where appropriate.
+ */
+
 #include "Board.h"
 #include <stdexcept>
 #include <sstream>

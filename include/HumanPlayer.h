@@ -1,37 +1,30 @@
 #ifndef HUMANPLAYER_H
 #define HUMANPLAYER_H
+
 /*
  * Author: Katarina Kruse
- * Created: February 27, 2026
- * Last Modified: February 27, 2026
+ * Last modified: March 1, 2026
  *
  * Description:
- * Defines a human-controlled player that requests input and returns
- * a column choice. This class overrides the Player interface.
+ *   HumanPlayer implements the Player interface for a human user.
+ *   It prompts the user for a column number via standard input,
+ *   validates that the input is a number within the allowed range,
+ *   and returns the chosen column (1‑based). It does not mutate the game state.
  *
  * Notes:
- * HumanPlayer inherits from Player and must implement chooseMove.
- * The function prompts the user for input (implementation in .cpp).
- *
- * A forward declaration of GameState is used because only the type
- * needs to be known here — not its definition.
- *
- * The destructor is defaulted since no special resource management
- * is required.
+ *   - getMove() blocks until valid input is received.
+ *   - Input is read as a string and converted to int; invalid input is rejected.
+ *   - The function relies on GameState::getWidth() to know the board size.
  */
-class GameState;
 
 #include "Player.h"
+#include "GameState.h"
 
 class HumanPlayer : public Player {
 public:
-    HumanPlayer() = default;
-    ~HumanPlayer() = default;
-
-    HumanPlayer(const HumanPlayer&) = delete;
-    HumanPlayer& operator=(const HumanPlayer&) = delete;
-
-    int chooseMove(const GameState& state) const override;
+    HumanPlayer(char id);
+    virtual ~HumanPlayer() = default;
+    int getMove(const GameState& state) const override;
 };
 
-#endif
+#endif 
