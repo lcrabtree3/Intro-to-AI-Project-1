@@ -1,18 +1,22 @@
 #ifndef GAMESTATE_H
 #define GAMESTATE_H
 
-#include "Board.h"  // Include Board header
+#include "Board.h"
 #include <memory>
 
 /**
  * @class GameState
  * @brief Manages the state of the Connect M game
+ * 
+ * The GameState class is responsible for maintaining the current state of the game,
+ * including the board configuration, current player, and game rules. It enforces
+ * all game rules including valid moves, win detection, and draw detection.
  */
 class GameState {
 private:
     std::unique_ptr<Board> board;
     char currentPlayer;
-    int mToWin;
+    int mToWin;  // M: number of disks needed to win
     bool gameOver;
     char winner;
 
@@ -117,11 +121,58 @@ public:
      */
     bool checkDraw() const;
 
-private:
+    // ============= WIN DETECTION METHODS =============
+    
+    /**
+     * @brief Check for a win horizontally
+     * @param row Row to check
+     * @param col Column to check
+     * @param player Player to check for
+     * @return true if player has M in a row horizontally
+     */
     bool checkHorizontal(int row, int col, char player) const;
+    
+    /**
+     * @brief Check for a win vertically
+     * @param row Row to check
+     * @param col Column to check
+     * @param player Player to check for
+     * @return true if player has M in a row vertically
+     */
     bool checkVertical(int row, int col, char player) const;
+    
+    /**
+     * @brief Check for a win diagonally (down-right direction)
+     * @param row Row to check
+     * @param col Column to check
+     * @param player Player to check for
+     * @return true if player has M in a row diagonally
+     */
     bool checkDiagonalDown(int row, int col, char player) const;
+    
+    /**
+     * @brief Check for a win diagonally (up-right direction)
+     * @param row Row to check
+     * @param col Column to check
+     * @param player Player to check for
+     * @return true if player has M in a row diagonally
+     */
     bool checkDiagonalUp(int row, int col, char player) const;
+    
+    /**
+     * @brief Check all four directions from a starting cell
+     * @param row Row to check
+     * @param col Column to check
+     * @param player Player to check for
+     * @return true if any direction has M in a row
+     */
+    bool checkAllDirections(int row, int col, char player) const;
+    
+    /**
+     * @brief Get a description of the win (for debugging)
+     * @return String describing the win type and location
+     */
+    std::string getWinDescription() const;
 };
 
 #endif // GAMESTATE_H
