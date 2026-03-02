@@ -1,22 +1,18 @@
 #ifndef GAMESTATE_H
 #define GAMESTATE_H
 
-#include "Board.h"  // Add this include
+#include "Board.h"  // Include Board header
 #include <memory>
 
 /**
  * @class GameState
  * @brief Manages the state of the Connect M game
- * 
- * The GameState class is responsible for maintaining the current state of the game,
- * including the board configuration, current player, and game rules. It enforces
- * all game rules including valid moves, win detection, and draw detection.
  */
 class GameState {
 private:
-    std::unique_ptr<Board> board;  // This now knows about Board
+    std::unique_ptr<Board> board;
     char currentPlayer;
-    int mToWin;  // M: number of disks needed to win
+    int mToWin;
     bool gameOver;
     char winner;
 
@@ -30,10 +26,35 @@ public:
     GameState(int n, int m, char firstPlayer);
     
     /**
-     * @brief Copy constructor for GameState
+     * @brief Destructor
+     */
+    ~GameState();
+    
+    /**
+     * @brief Copy constructor
      * @param other GameState to copy from
      */
     GameState(const GameState& other);
+    
+    /**
+     * @brief Move constructor
+     * @param other GameState to move from
+     */
+    GameState(GameState&& other) noexcept;
+    
+    /**
+     * @brief Copy assignment operator
+     * @param other GameState to copy from
+     * @return Reference to this GameState
+     */
+    GameState& operator=(const GameState& other);
+    
+    /**
+     * @brief Move assignment operator
+     * @param other GameState to move from
+     * @return Reference to this GameState
+     */
+    GameState& operator=(GameState&& other) noexcept;
     
     /**
      * @brief Apply a move to the game state
@@ -97,40 +118,9 @@ public:
     bool checkDraw() const;
 
 private:
-    /**
-     * @brief Check for horizontal win
-     * @param row Row to check
-     * @param col Column to check
-     * @param player Player to check for
-     * @return true if player has M in a row horizontally
-     */
     bool checkHorizontal(int row, int col, char player) const;
-    
-    /**
-     * @brief Check for vertical win
-     * @param row Row to check
-     * @param col Column to check
-     * @param player Player to check for
-     * @return true if player has M in a row vertically
-     */
     bool checkVertical(int row, int col, char player) const;
-    
-    /**
-     * @brief Check for diagonal win (top-left to bottom-right)
-     * @param row Row to check
-     * @param col Column to check
-     * @param player Player to check for
-     * @return true if player has M in a row diagonally
-     */
     bool checkDiagonalDown(int row, int col, char player) const;
-    
-    /**
-     * @brief Check for diagonal win (top-right to bottom-left)
-     * @param row Row to check
-     * @param col Column to check
-     * @param player Player to check for
-     * @return true if player has M in a row diagonally
-     */
     bool checkDiagonalUp(int row, int col, char player) const;
 };
 

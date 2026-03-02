@@ -1,7 +1,9 @@
 #include "GameState.h"
 #include <iostream>
 #include <algorithm>
+#include <stdexcept>  // For std::invalid_argument
 
+// Constructor
 GameState::GameState(int n, int m, char firstPlayer)
     : board(new Board(n))  // Use new instead of make_unique for C++11
     , currentPlayer(firstPlayer)
@@ -20,12 +22,48 @@ GameState::GameState(int n, int m, char firstPlayer)
     }
 }
 
+// Destructor - needed for std::unique_ptr with incomplete type
+GameState::~GameState() = default;
+
+// Copy constructor
 GameState::GameState(const GameState& other)
     : board(new Board(*other.board))  // Use new instead of make_unique
     , currentPlayer(other.currentPlayer)
     , mToWin(other.mToWin)
     , gameOver(other.gameOver)
     , winner(other.winner) {}
+
+// Move constructor (optional but good to have)
+GameState::GameState(GameState&& other) noexcept
+    : board(std::move(other.board))
+    , currentPlayer(other.currentPlayer)
+    , mToWin(other.mToWin)
+    , gameOver(other.gameOver)
+    , winner(other.winner) {}
+
+// Copy assignment operator
+GameState& GameState::operator=(const GameState& other) {
+    if (this != &other) {
+        board.reset(new Board(*other.board));
+        currentPlayer = other.currentPlayer;
+        mToWin = other.mToWin;
+        gameOver = other.gameOver;
+        winner = other.winner;
+    }
+    return *this;
+}
+
+// Move assignment operator
+GameState& GameState::operator=(GameState&& other) noexcept {
+    if (this != &other) {
+        board = std::move(other.board);
+        currentPlayer = other.currentPlayer;
+        mToWin = other.mToWin;
+        gameOver = other.gameOver;
+        winner = other.winner;
+    }
+    return *this;
+}
 
 bool GameState::applyMove(int column) {
     // Check if game is already over
@@ -72,7 +110,7 @@ bool GameState::isValidMove(int column) const {
         return false;
     }
     
-    // Check column range (1-based to 0-based)
+    // Check column range (1-based)
     if (column < 1 || column > board->getSize()) {
         return false;
     }
@@ -140,11 +178,12 @@ bool GameState::checkDiagonalDown(int row, int col, char player) const {
     int count = 0;
     int size = board->getSize();
     
-    // Check down-right diagonal (towards bottom-right)
+    // Check diagonal going up-right (increasing row, increasing col)
+    // Since row 0 is bottom, increasing row means going UP
     for (int i = 0; i < mToWin; i++) {
-        int r = row - i;  // Moving up (since bottom is row 0)
-        int c = col + i;
-        if (r >= 0 && r < size && c >= 0 && c < size) {
+        int r = row + i;  // Moving UP
+        int c = col + i;  // Moving RIGHT
+        if (r < size && c < size) {
             if (board->getCell(r, c) == player) {
                 count++;
             } else {
@@ -162,11 +201,12 @@ bool GameState::checkDiagonalUp(int row, int col, char player) const {
     int count = 0;
     int size = board->getSize();
     
-    // Check up-right diagonal (towards top-right)
+    // Check diagonal going down-right (decreasing row, increasing col)
+    // Since row 0 is bottom, decreasing row means going DOWN
     for (int i = 0; i < mToWin; i++) {
-        int r = row + i;  // Moving down (since bottom is row 0)
-        int c = col + i;
-        if (r >= 0 && r < size && c >= 0 && c < size) {
+        int r = row - i;  // Moving DOWN
+        int c = col + i;  // Moving RIGHT
+        if (r >= 0 && c < size) {
             if (board->getCell(r, c) == player) {
                 count++;
             } else {
