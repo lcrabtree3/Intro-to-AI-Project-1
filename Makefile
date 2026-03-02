@@ -23,6 +23,9 @@ all: $(TEST_BOARD_EXEC)
 # Run the test
 test: test-board
 
+test_board: $(TEST_BOARD_SRCS)
+	$(CXX) $(CXXFLAGS) $(INCLUDES) -o $(TEST_BOARD_EXEC) $(TEST_BOARD_SRCS)
+
 test-board: $(TEST_BOARD_EXEC)
 	./$(TEST_BOARD_EXEC)
 
