@@ -80,16 +80,46 @@ public:
     void clear();
     
     /**
-     * @brief Get a string representation of the board for display
-     * @return ASCII representation of the board
+     * @brief Get a colorful string representation of the board for display
+     * @return ASCII representation of the board with visual enhancements
      */
     std::string toString() const;
+    
+    /**
+     * @brief Get a simple ASCII representation without borders
+     * @return Simple board representation
+     */
+    std::string toSimpleString() const;
     
     /**
      * @brief Get a string representation with row numbers
      * @return ASCII representation with row indices
      */
     std::string toDebugString() const;
+    
+    /**
+     * @brief Get a fancy box-drawing representation
+     * @return Board with box-drawing characters
+     */
+    std::string toFancyString() const;
+    
+    /**
+     * @brief Get a compact representation (minimal spacing)
+     * @return Compact board view
+     */
+    std::string toCompactString() const;
+    
+    /**
+     * @brief Get a representation with column guides
+     * @return Board with visual column guides
+     */
+    std::string toGuidedString() const;
+    
+    /**
+     * @brief Get a representation with alternating row colors (simulated with characters)
+     * @return Board with visual row separation
+     */
+    std::string toStripedString() const;
     
     /**
      * @brief Check if a column index is valid
@@ -104,6 +134,24 @@ public:
      * @return Number of disks in the column
      */
     int getColumnHeight(int col) const;
+    
+    /**
+     * @brief Get a visual representation of column heights
+     * @return String showing column fullness
+     */
+    std::string getColumnHeightsString() const;
+    
+    /**
+     * @brief Get a header with column numbers
+     * @return Formatted column numbers
+     */
+    std::string getColumnHeader() const;
+    
+    /**
+     * @brief Get a footer with board info
+     * @return Board information footer
+     */
+    std::string getFooter() const;
 };
 
 #endif // BOARD_H
